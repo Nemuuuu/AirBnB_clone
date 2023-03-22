@@ -1,57 +1,58 @@
 #!/usr/bin/python3
-"""
-BaseModel - Module
-Parent class to take care of the initialization,
-serialization and deserialization of instances
- """
+
 import uuid
 from datetime import datetime
-import models
-
+from . import storage
 
 class BaseModel:
-    """
-    BaseModel class Parent class to take care of the initialization,
-    serialization and deserialization of instances
-    """
-    def __init__(self, *args, **kwargs):
-        """Initialization of a BaseModel instance"""
-        if (len(kwargs) == 0):
-            self.id = str(uuid.uuid4())
-            self.created_at = datetime.now()
-            self.updated_at = datetime.now()
-            models.storage.new(self)
-        else:
-            kwargs["created_at"] = datetime.strptime(kwargs["created_at"],
-                                                     "%Y-%m-%dT%H:%M:%S.%f")
-            kwargs["updated_at"] = datetime.strptime(kwargs["updated_at"],
-                                                     "%Y-%m-%dT%H:%M:%S.%f")
-            for key, val in kwargs.items():
-                if "__class__" not in key:
-                    setattr(self, key, val)
-
-    def __str__(self):
-        """String representation of a BaseModel instance"""
-        return ("[{}] ({}) {}".format(self.__class__.__name__,
-                                      self.id, self.__dict__))
-
-    def __repr__(self):
-        """
-            Return string representation of BaseModel class
-        """
-        return ("[{}] ({}) {}".format(self.__class__.__name__,
-                                      self.id, self.__dict__))
-
-    def save(self):
-        """updates 'updated_at' instance with current datetime"""
-        self.updated_at = datetime.now()
-        models.storage.save()
-
-    def to_dict(self):
-        """Return dictionary representation of BaseModel class."""
-        nw_dct = dict(self.__dict__)
-        nw_dct['__class__'] = self.__class__.__name__
-        nw_dct['created_at'] = self.updated_at.strftime("%Y-%m-%dT%H:%M:%S.%f")
-        nw_dct['updated_at'] = self.created_at.strftime("%Y-%m-%dT%H:%M:%S.%f")
-
-        return (nw_dct)
+    	
+	"""
+	Base Model class with
+	"""
+	def __init__(self, *args, **kwargs):
+    		
+			
+		""" 
+		method to instantiate objects with some validations
+		"""
+		if len(kwargs) != 0:
+			for key, value in kwargs.items():
+				if key == 'id':
+					self.id = value
+				elif key == 'created_at':
+					value = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%f")  
+					self.created_at = value
+				elif key == 'updated_at':
+					value = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%f")  
+					self.updated_at = value
+		else:
+			self.id = str(uuid.uuid4())
+			self.created_at = datetime.now()
+			self.updated_at = datetime.now()
+			storage.new(self)
+	def __str__(self):
+    		
+		"""
+		unofficial representation of a class
+		"""
+		return f"[{__class__.__name__}] ({self.id}) {self.__dict__}"
+	def save(self):
+    		
+		"""
+		updates the public instance attribute updated_at with current datetime
+		"""
+		self.updated_at = datetime.now()
+		storage.save()
+	def to_dict(self):
+    		
+		"""
+		returns a dictionary containing all key/values of __dict__ of instances
+		"""
+		dicts = {
+				'id': self.id,
+				'created_at': self.created_at.strftime("%Y-%m-%dT%H:%M:%S.%f"),
+				'updated_at': self.updated_at.strftime("%Y-%m-%dT%H:%M:%S.%f"),
+				'__class__': __class__.__name__,
+				
+				}
+		return dicts
